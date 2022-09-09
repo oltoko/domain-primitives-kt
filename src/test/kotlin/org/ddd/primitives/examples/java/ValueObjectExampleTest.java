@@ -2,8 +2,6 @@ package org.ddd.primitives.examples.java;
 
 import org.ddd.primitives.model.ValueObject;
 import org.ddd.primitives.validation.ValidationException;
-import org.ddd.primitives.validation.ValueValidation;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -13,7 +11,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.ddd.primitives.validation.ValidationsKt.notZero;
+import static org.ddd.primitives.validation.ValidationsKt.*;
 
 public class ValueObjectExampleTest {
 
@@ -43,7 +41,6 @@ public class ValueObjectExampleTest {
     }
 
     @Test
-    @Disabled("Not sure what to do with this case")
     void doesnt_validate_if_amount_is_null() {
         assertThatCode(() -> new MonetaryAmount(null, EUR))
             .doesNotThrowAnyException();
@@ -59,9 +56,10 @@ public class ValueObjectExampleTest {
 
         private MonetaryAmount(BigDecimal amount, Currency currency) {
             super(
-                notZero(amount, ""),
-                new ValueValidation<>(amount, "amount must match fraction digits of " + currency.getDefaultFractionDigits(), a -> a.scale() <= currency.getDefaultFractionDigits()),
-                new ValueValidation<>(currency, "€, $ and CHF only", SUPPORTED_CURRENCIES::contains)
+                notNull(currency, "currency must not be null"),
+                notZero(amount, "amount must not be Zero"),
+                nullsafe(amount, "amount must match fraction digits of " + currency.getDefaultFractionDigits(), a -> a.scale() <= currency.getDefaultFractionDigits()),
+                nullsafe(currency, "€, $ and CHF only", SUPPORTED_CURRENCIES::contains)
             );
             this.amount = amount;
             this.currency = currency;

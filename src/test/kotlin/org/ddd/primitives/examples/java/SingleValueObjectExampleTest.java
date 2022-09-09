@@ -18,6 +18,13 @@ public class SingleValueObjectExampleTest {
             .doesNotThrowAnyException();
     }
 
+    @Test
+    void doesnt_validate_if_value_is_null() {
+        assertThatThrownBy(() -> new Name(null))
+            .isInstanceOf(ValidationException.class)
+            .hasMessageContainingAll("Name is not valid", "must not be null");
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", "    ", "\t", "\n"})
     void doesnt_validated_if_blank(String value) {
@@ -44,6 +51,7 @@ public class SingleValueObjectExampleTest {
         public Name(String name) {
             super(
                 name,
+                notNull(name, "must not be null"),
                 notBlank(name, "must not be blank"),
                 minLength(name, "must have min length of 3", 3),
                 maxLength(name, "must have max length of 20", 20)

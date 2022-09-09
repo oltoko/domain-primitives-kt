@@ -11,6 +11,7 @@ import org.ddd.primitives.validation.ValidationException
 import org.ddd.primitives.validation.ValueValidation
 import org.ddd.primitives.validation.conformRegEx
 import org.ddd.primitives.validation.greaterThanZero
+import org.ddd.primitives.validation.maxLength
 import org.ddd.primitives.validation.must
 import org.ddd.primitives.validation.notBlank
 import org.ddd.primitives.validation.notEmpty
@@ -98,7 +99,7 @@ internal class AggregateExampleTest {
             )
         }
 
-        exc.message shouldContain "email should be valid"
+        exc.message shouldContain "email must be valid"
     }
 
     @Test
@@ -134,11 +135,13 @@ internal data class Customer(
     val customerNumber: String,
     val userName: String,
     val emailAddress: String,
+    val phoneNumber: String? = null
 ) : Entity<String>(
     notBlank(customerNumber, "Customer number must not be blank"),
     onlyContainNumbers(customerNumber, "Customer number must only consist of numbers"),
     notBlank(userName, "User name must not be blank"),
-    conformRegEx(emailAddress, "email should be valid", "^[^@]+@[^@]+\\.[^@]+\$".toRegex())
+    conformRegEx(emailAddress, "email must be valid", "^[^@]+@[^@]+\\.[^@]+\$".toRegex()),
+    maxLength(phoneNumber, "phone number must have max length of 30", 30),
 ) {
     override fun businessKey() = customerNumber
 }
