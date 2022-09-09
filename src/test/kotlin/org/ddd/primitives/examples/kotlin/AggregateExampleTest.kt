@@ -64,14 +64,14 @@ internal class AggregateExampleTest {
                 billingAddress = Address(
                     name = "Mr. Test",
                     street = "Test Street 45",
-                    zipCode = "",
-                    city = "",
-                    countryCode = "de"
+                    zipCode = "12345",
+                    city = "Test City",
+                    countryCode = "DE"
                 )
             )
         }
 
-        exc.message shouldContain ""
+        exc.message shouldContain "Item List must not be empty"
     }
 
     @Test
@@ -98,6 +98,22 @@ internal class AggregateExampleTest {
         }
 
         exc.message shouldContain "email should be valid"
+    }
+
+    @Test
+    internal fun `customer should throw if invalid after copy`() {
+
+        val customer = Customer(
+            customerNumber = "123456",
+            userName = "asdf",
+            emailAddress = "asdf@example.com",
+        )
+
+        val exc = shouldThrow<ValidationException> {
+            customer.copy(customerNumber = "    ")
+        }
+
+        exc.message shouldContain "Customer number must not be blank"
     }
 }
 
