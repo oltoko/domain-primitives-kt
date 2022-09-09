@@ -1,4 +1,4 @@
-package org.ddd.primitives.model
+package org.ddd.primitives.validation
 
 interface Validatable {
     fun validate()

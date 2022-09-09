@@ -1,10 +1,13 @@
 package org.ddd.primitives.examples.kotlin
 
+import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
 import org.ddd.primitives.model.SingleValueObject
-import org.ddd.primitives.validation.Validation
 import org.ddd.primitives.validation.ValidationException
+import org.ddd.primitives.validation.maxLength
+import org.ddd.primitives.validation.minLength
+import org.ddd.primitives.validation.notBlank
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -13,11 +16,13 @@ internal class SingleValueObjectExampleTest {
 
     @Test
     internal fun `validates if all requirements are fulfilled`() {
-        Name("Zaphod")
+        shouldNotThrow<ValidationException> {
+            Name("Zaphod")
+        }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["", " ", "\t", "\n"])
+    @ValueSource(strings = ["", "    ", "\t", "\n"])
     internal fun `doesn't validate if blank`(invalidName: String) {
 
         val ex = shouldThrow<ValidationException> {
@@ -26,7 +31,7 @@ internal class SingleValueObjectExampleTest {
 
         with(ex.message) {
             this shouldContain "Name is not valid"
-            this shouldContain "should not be blank"
+            this shouldContain "must not be blank"
         }
     }
 
@@ -39,7 +44,7 @@ internal class SingleValueObjectExampleTest {
 
         with(ex.message) {
             this shouldContain "Name is not valid"
-            this shouldContain "should have min length 3"
+            this shouldContain "must have min length of 3"
         }
     }
 
@@ -52,14 +57,14 @@ internal class SingleValueObjectExampleTest {
 
         with(ex.message) {
             this shouldContain "Name is not valid"
-            this shouldContain "should have max length 20"
+            this shouldContain "must have max length of 20"
         }
     }
 }
 
 internal class Name(name: String) : SingleValueObject<String>(
     name,
-    Validation(name, "should not be blank") { it.isBlank().not() } and
-            Validation(name, "should have min length 3") { it.length >= 3 } and
-            Validation(name, "should have max length 20") { it.length <= 20 }
+    notBlank(name, "must not be blank"),
+    minLength(name, "must have min length of 3", 3),
+    maxLength(name, "must have max length of 20", 20),
 )
