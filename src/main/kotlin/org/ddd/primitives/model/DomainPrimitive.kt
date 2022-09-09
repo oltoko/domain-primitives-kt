@@ -20,7 +20,7 @@ abstract class DomainPrimitive(
             .map { it.error }
             .joinToString("; ")
 
-        if (validationErrors.isNotBlank()) {
+        if (validationErrors.isNotEmpty()) {
             throw ValidationException(this.javaClass.simpleName, validationErrors)
         }
     }
