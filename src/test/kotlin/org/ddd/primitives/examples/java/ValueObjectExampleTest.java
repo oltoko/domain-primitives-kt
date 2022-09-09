@@ -1,8 +1,9 @@
 package org.ddd.primitives.examples.java;
 
 import org.ddd.primitives.model.ValueObject;
-import org.ddd.primitives.validation.Validation;
 import org.ddd.primitives.validation.ValidationException;
+import org.ddd.primitives.validation.ValueValidation;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -31,7 +32,7 @@ public class ValueObjectExampleTest {
     void doesnt_validate_if_fraction_digits_are_wrong() {
         assertThatThrownBy(() -> new MonetaryAmount(new BigDecimal("12.123"), CHF))
             .isInstanceOf(ValidationException.class)
-            .hasMessageContainingAll("MonetaryAmount is not valid", "amount should match fraction digits of 2");
+            .hasMessageContainingAll("MonetaryAmount is not valid", "amount must match fraction digits of 2");
     }
 
     @Test
@@ -39,6 +40,13 @@ public class ValueObjectExampleTest {
         assertThatThrownBy(() -> new MonetaryAmount(new BigDecimal("12.12"), JPY))
             .isInstanceOf(ValidationException.class)
             .hasMessageContainingAll("MonetaryAmount is not valid", "€, $ and CHF only");
+    }
+
+    @Test
+    @Disabled("Not sure what to do with this case")
+    void doesnt_validate_if_amount_is_null() {
+        assertThatCode(() -> new MonetaryAmount(null, EUR))
+            .doesNotThrowAnyException();
     }
 
     private static class MonetaryAmount extends ValueObject {
@@ -52,8 +60,8 @@ public class ValueObjectExampleTest {
         private MonetaryAmount(BigDecimal amount, Currency currency) {
             super(
                 notZero(amount, ""),
-                new Validation<>(amount, "amount should match fraction digits of " + currency.getDefaultFractionDigits(), a -> a.scale() <= currency.getDefaultFractionDigits()),
-                new Validation<>(currency, "€, $ and CHF only", SUPPORTED_CURRENCIES::contains)
+                new ValueValidation<>(amount, "amount must match fraction digits of " + currency.getDefaultFractionDigits(), a -> a.scale() <= currency.getDefaultFractionDigits()),
+                new ValueValidation<>(currency, "€, $ and CHF only", SUPPORTED_CURRENCIES::contains)
             );
             this.amount = amount;
             this.currency = currency;

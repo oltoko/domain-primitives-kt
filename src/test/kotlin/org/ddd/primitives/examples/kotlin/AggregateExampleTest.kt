@@ -7,10 +7,11 @@ import org.ddd.primitives.model.Aggregate
 import org.ddd.primitives.model.Entity
 import org.ddd.primitives.model.SingleValueObject
 import org.ddd.primitives.model.ValueObject
-import org.ddd.primitives.validation.Validation
 import org.ddd.primitives.validation.ValidationException
+import org.ddd.primitives.validation.ValueValidation
+import org.ddd.primitives.validation.conformRegEx
 import org.ddd.primitives.validation.greaterThanZero
-import org.ddd.primitives.validation.mustConformRegEx
+import org.ddd.primitives.validation.must
 import org.ddd.primitives.validation.notBlank
 import org.ddd.primitives.validation.notEmpty
 import org.ddd.primitives.validation.onlyContainNumbers
@@ -123,7 +124,10 @@ internal data class Order(
     val billingAddress: Address,
     val shippingAddress: Address? = null
 ) : Aggregate(
-    notEmpty(items, "Item List must not be empty")
+    notEmpty(items, "Item List must not be empty"),
+    must("Billing and shipping address must not be equal") {
+        billingAddress != shippingAddress
+    }
 )
 
 internal data class Customer(
@@ -134,7 +138,7 @@ internal data class Customer(
     notBlank(customerNumber, "Customer number must not be blank"),
     onlyContainNumbers(customerNumber, "Customer number must only consist of numbers"),
     notBlank(userName, "User name must not be blank"),
-    mustConformRegEx(emailAddress, "email should be valid", "^[^@]+@[^@]+\\.[^@]+\$".toRegex())
+    conformRegEx(emailAddress, "email should be valid", "^[^@]+@[^@]+\\.[^@]+\$".toRegex())
 ) {
     override fun businessKey() = customerNumber
 }
@@ -172,7 +176,7 @@ internal data class Address(
     notBlank(street, "Street must not be blank"),
     notBlank(zipCode, "ZipCode must not be blank"),
     notBlank(city, "City must not be blank"),
-    Validation(countryCode, "CountryCode needs to be a valid one") { cc ->
+    ValueValidation(countryCode, "Country Code needs to be an exiting one") { cc ->
         cc?.let { isoCountryCodes.contains(it) } ?: true
     }
 )

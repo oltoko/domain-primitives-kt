@@ -3,8 +3,8 @@ package org.ddd.primitives.examples.kotlin
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import org.ddd.primitives.model.ValueObject
-import org.ddd.primitives.validation.Validation
 import org.ddd.primitives.validation.ValidationException
+import org.ddd.primitives.validation.ValueValidation
 import org.ddd.primitives.validation.notZero
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -38,17 +38,17 @@ internal data class MonetaryAmount(
     val amount: BigDecimal,
     val currency: Currency,
 ) : ValueObject(
-    Validation(
+    ValueValidation(
         amount,
         "amount should match fraction digits of ${currency.defaultFractionDigits}"
     ) { it.scale() <= currency.defaultFractionDigits },
     notZero(amount, "amount should not be Zero"),
-    Validation(currency, "€, $ and CHF only") { supportedCurrencies.contains(currency) }
+    ValueValidation(currency, "€, $ and CHF only") { supportedCurrencies.contains(currency) }
 )
 
-val EUR = Currency.getInstance("EUR")
-val USD = Currency.getInstance("USD")
-val CHF = Currency.getInstance("CHF")
-val JPY = Currency.getInstance("JPY")
+val EUR: Currency = Currency.getInstance("EUR")
+val USD: Currency = Currency.getInstance("USD")
+val CHF: Currency = Currency.getInstance("CHF")
+val JPY: Currency = Currency.getInstance("JPY")
 
 val supportedCurrencies = listOf(EUR, USD, CHF)

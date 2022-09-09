@@ -5,7 +5,7 @@ import org.ddd.primitives.validation.Validation
 import org.ddd.primitives.validation.ValidationException
 
 abstract class DomainPrimitive(
-    private val validations: List<Validation<*>>
+    private val validations: List<Validation>
 ) : Validatable {
 
     init {
