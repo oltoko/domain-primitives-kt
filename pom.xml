@@ -11,6 +11,18 @@
 
     <name>domain-primitives-kt</name>
 
+    <organization>
+        <name>Novatec Consulting GmbH</name>
+        <url>http://www.novatec-gmbh.de</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
