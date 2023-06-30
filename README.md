@@ -24,7 +24,7 @@ class Name(name: String) : SingleValueObject<String>(
 It's only possible to create a valid object if it matches the pattern. The `SingleValueObject` defines the value as
 final, which results in an immutable object.
 
-Creating a name object with an invalid value will throw an `ValidationException`:
+Creating a name object with an invalid value will throw an `ValidationViolationException`:
 
 ```kotlin
 class SingleValueObjectExampleTest {
