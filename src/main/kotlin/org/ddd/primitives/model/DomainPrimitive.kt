@@ -1,27 +1,17 @@
 package org.ddd.primitives.model
 
-import org.ddd.primitives.validation.Validatable
-import org.ddd.primitives.validation.Validation
-import org.ddd.primitives.validation.ValidationException
+import org.ddd.primitives.validation.ValidationViolation
 
-abstract class DomainPrimitive(
-    private val validations: List<Validation>
-) : Validatable {
-
+sealed class DomainPrimitive(
+    violations: List<ValidationViolation>
+) {
     init {
-        this.validate()
-    }
+        val validationViolations = violations.asSequence()
+            .map { it.description }
+            .joinToString("; ", limit = 20)
 
-    override fun validate() {
-
-        val validationErrors = validations
-            .map { it.validate() }
-            .filter { it.valid.not() }
-            .map { it.error }
-            .joinToString("; ")
-
-        if (validationErrors.isNotEmpty()) {
-            throw ValidationException(this.javaClass.simpleName, validationErrors)
+        if (validationViolations.isNotEmpty()) {
+            throw ValidationViolationException(this.javaClass.simpleName, validationViolations)
         }
     }
 }

@@ -1,10 +1,10 @@
 package org.ddd.primitives.validation
 
-interface Validation {
-    fun validate(): ValidationResult
+fun noValidation() = listOf<ValidationViolation>()
+
+fun validation(init: ValidationDsl.() -> Unit): List<ValidationViolation> {
+    val dsl = ValidationDsl()
+    dsl.init()
+    return dsl.results
 }
 
-data class ValidationResult(
-    val valid: Boolean,
-    val error: String? = null
-)

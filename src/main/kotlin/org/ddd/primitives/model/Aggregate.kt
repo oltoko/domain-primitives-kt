@@ -1,5 +1,7 @@
 package org.ddd.primitives.model
 
-import org.ddd.primitives.validation.Validation
+import org.ddd.primitives.validation.ValidationViolation
 
-abstract class Aggregate(vararg validations: Validation) : DomainPrimitive(validations.asList())
+abstract class Aggregate(
+    violations: List<ValidationViolation>
+) : DomainPrimitive(violations)

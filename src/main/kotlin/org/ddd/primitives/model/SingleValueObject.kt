@@ -1,8 +1,8 @@
 package org.ddd.primitives.model
 
-import org.ddd.primitives.validation.Validation
+import org.ddd.primitives.validation.ValidationViolation
 
 abstract class SingleValueObject<T>(
     val value: T,
-    vararg validations: Validation
-) : DomainPrimitive(validations.asList())
+    violations: List<ValidationViolation>
+) : DomainPrimitive(violations)

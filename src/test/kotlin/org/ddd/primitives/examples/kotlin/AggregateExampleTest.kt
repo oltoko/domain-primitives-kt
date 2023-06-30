@@ -3,23 +3,12 @@ package org.ddd.primitives.examples.kotlin
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
-import org.ddd.primitives.model.Aggregate
-import org.ddd.primitives.model.Entity
-import org.ddd.primitives.model.SingleValueObject
-import org.ddd.primitives.model.ValueObject
-import org.ddd.primitives.validation.ValidationException
-import org.ddd.primitives.validation.ValueValidation
-import org.ddd.primitives.validation.conformRegEx
-import org.ddd.primitives.validation.greaterThanZero
-import org.ddd.primitives.validation.maxLength
-import org.ddd.primitives.validation.must
-import org.ddd.primitives.validation.notBlank
-import org.ddd.primitives.validation.notEmpty
-import org.ddd.primitives.validation.onlyContainNumbers
+import org.ddd.primitives.model.*
+import org.ddd.primitives.validation.noValidation
+import org.ddd.primitives.validation.validation
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
-import java.util.Currency
-import java.util.Locale
+import java.util.*
 
 internal class AggregateExampleTest {
 
@@ -55,7 +44,7 @@ internal class AggregateExampleTest {
 
     @Test
     internal fun `order should throw if item list is empty`() {
-        val exc = shouldThrow<ValidationException> {
+        val exc = shouldThrow<ValidationViolationException> {
             Order(
                 customer = Customer(
                     customerNumber = "123456",
@@ -78,7 +67,7 @@ internal class AggregateExampleTest {
 
     @Test
     internal fun `customer should throw if customer number is blank`() {
-        val exc = shouldThrow<ValidationException> {
+        val exc = shouldThrow<ValidationViolationException> {
             Customer(
                 customerNumber = "   ",
                 userName = "asdf",
@@ -91,7 +80,7 @@ internal class AggregateExampleTest {
 
     @Test
     internal fun `customer should throw if email is not valid`() {
-        val exc = shouldThrow<ValidationException> {
+        val exc = shouldThrow<ValidationViolationException> {
             Customer(
                 customerNumber = "123456",
                 userName = "asdf",
@@ -111,7 +100,7 @@ internal class AggregateExampleTest {
             emailAddress = "asdf@example.com",
         )
 
-        val exc = shouldThrow<ValidationException> {
+        val exc = shouldThrow<ValidationViolationException> {
             customer.copy(customerNumber = "    ")
         }
 
@@ -125,9 +114,11 @@ internal data class Order(
     val billingAddress: Address,
     val shippingAddress: Address? = null
 ) : Aggregate(
-    notEmpty(items, "Item List must not be empty"),
-    must("Billing and shipping address must not be equal") {
-        billingAddress != shippingAddress
+    validation {
+        notEmpty(items, "Item List must not be empty")
+        check("Billing and shipping address must not be equal") {
+            billingAddress != shippingAddress
+        }
     }
 )
 
@@ -137,11 +128,13 @@ internal data class Customer(
     val emailAddress: String,
     val phoneNumber: String? = null
 ) : Entity<String>(
-    notBlank(customerNumber, "Customer number must not be blank"),
-    onlyContainNumbers(customerNumber, "Customer number must only consist of numbers"),
-    notBlank(userName, "User name must not be blank"),
-    conformRegEx(emailAddress, "email must be valid", "^[^@]+@[^@]+\\.[^@]+\$".toRegex()),
-    maxLength(phoneNumber, "phone number must have max length of 30", 30),
+    validation {
+        notBlank(customerNumber, "Customer number must not be blank")
+        onlyContainNumbers(customerNumber, "Customer number must only consist of numbers")
+        notBlank(userName, "User name must not be blank")
+        conformRegEx(emailAddress, "email must be valid", "^[^@]+@[^@]+\\.[^@]+\$".toRegex())
+        maxLength(phoneNumber, "phone number must have max length of 30", 30)
+    }
 ) {
     override fun businessKey() = customerNumber
 }
@@ -149,7 +142,7 @@ internal data class Customer(
 internal data class Item(
     val articleNo: ArticleNumber,
     val price: Price,
-) : Entity<ArticleNumber>() {
+) : Entity<ArticleNumber>(noValidation()) {
     override fun businessKey() = articleNo
 }
 
@@ -157,15 +150,19 @@ internal data class ArticleNumber(
     val number: String,
 ) : SingleValueObject<String>(
     number,
-    notBlank(number, "Article number must not be blank"),
-    onlyContainNumbers(number, "Article number must only consists of numbers")
+    validation {
+        notBlank(number, "Article number must not be blank")
+        onlyContainNumbers(number, "Article number must only consists of numbers")
+    }
 )
 
 internal data class Price(
     val price: BigDecimal,
     val currency: Currency,
 ) : ValueObject(
-    greaterThanZero(price, "Price must be greater than Zero")
+    validation {
+        greaterThanZero(price, "Price must be greater than Zero")
+    }
 )
 
 internal data class Address(
@@ -175,12 +172,14 @@ internal data class Address(
     val city: String,
     val countryCode: String?,
 ) : ValueObject(
-    notBlank(name, "Name must not be blank"),
-    notBlank(street, "Street must not be blank"),
-    notBlank(zipCode, "ZipCode must not be blank"),
-    notBlank(city, "City must not be blank"),
-    ValueValidation(countryCode, "Country Code needs to be an exiting one") { cc ->
-        cc?.let { isoCountryCodes.contains(it) } ?: true
+    validation {
+        notBlank(name, "Name must not be blank")
+        notBlank(street, "Street must not be blank")
+        notBlank(zipCode, "ZipCode must not be blank")
+        notBlank(city, "City must not be blank")
+        checkIgnoreNull(countryCode, "Country Code needs to be an existing one") {
+            it.let { isoCountryCodes.contains(it) }
+        }
     }
 )
 

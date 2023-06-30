@@ -4,10 +4,8 @@ import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.string.shouldContain
 import org.ddd.primitives.model.SingleValueObject
-import org.ddd.primitives.validation.ValidationException
-import org.ddd.primitives.validation.maxLength
-import org.ddd.primitives.validation.minLength
-import org.ddd.primitives.validation.notBlank
+import org.ddd.primitives.model.ValidationViolationException
+import org.ddd.primitives.validation.validation
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -16,7 +14,7 @@ internal class SingleValueObjectExampleTest {
 
     @Test
     internal fun `validates if all requirements are fulfilled`() {
-        shouldNotThrow<ValidationException> {
+        shouldNotThrow<ValidationViolationException> {
             Name("Zaphod")
         }
     }
@@ -25,7 +23,7 @@ internal class SingleValueObjectExampleTest {
     @ValueSource(strings = ["", "    ", "\t", "\n"])
     internal fun `doesn't validate if blank`(invalidName: String) {
 
-        val ex = shouldThrow<ValidationException> {
+        val ex = shouldThrow<ValidationViolationException> {
             Name(invalidName)
         }
 
@@ -38,7 +36,7 @@ internal class SingleValueObjectExampleTest {
     @Test
     internal fun `doesn't validate if less than 3 characters`() {
 
-        val ex = shouldThrow<ValidationException> {
+        val ex = shouldThrow<ValidationViolationException> {
             Name("42")
         }
 
@@ -51,7 +49,7 @@ internal class SingleValueObjectExampleTest {
     @Test
     internal fun `doesn't validate if more than 20 characters`() {
 
-        val ex = shouldThrow<ValidationException> {
+        val ex = shouldThrow<ValidationViolationException> {
             Name("Great Green Arkleseizure")
         }
 
@@ -64,7 +62,9 @@ internal class SingleValueObjectExampleTest {
 
 internal class Name(name: String) : SingleValueObject<String>(
     name,
-    notBlank(name, "must not be blank"),
-    minLength(name, "must have min length of 3", 3),
-    maxLength(name, "must have max length of 20", 20),
+    validation {
+        notBlank(name, "must not be blank")
+        minLength(name, "must have min length of 3", 3)
+        maxLength(name, "must have max length of 20", 20)
+    }
 )

@@ -1,7 +1,9 @@
 package org.ddd.primitives.model
 
-import org.ddd.primitives.validation.Validation
+import org.ddd.primitives.validation.ValidationViolation
 
-abstract class Entity<T>(vararg validations: Validation) : DomainPrimitive(validations.asList()) {
+abstract class Entity<T>(
+    violations: List<ValidationViolation>
+) : DomainPrimitive(violations) {
     abstract fun businessKey(): T
 }

@@ -1,6 +1,6 @@
-package org.ddd.primitives.validation
+package org.ddd.primitives.model
 
-class ValidationException(
+class ValidationViolationException(
     label: String,
     message: String,
 ) : RuntimeException("$label is not valid: $message")
